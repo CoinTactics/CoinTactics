@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CoinTactics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: auto; padding: 20px; }
+    h1, h2 { color: #2c3e50; }
+    ul { list-style-type: none; padding-left: 0; }
+    li { margin: 5px 0; }
+    .positive { color: green; }
+    .negative { color: red; }
+  </style>
+</head>
+<body>
+  <h1>CoinTactics</h1>
+  <p>Your hub for stock & crypto education, news & analytics</p>
+
+  <section>
+    <h2>Live Crypto Prices (USD)</h2>
+    <ul id="crypto-list">Loading crypto data...</ul>
+  </section>
+
+  <section>
+    <h2>Live Stock Price (Apple - AAPL)</h2>
+    <div id="stock-data">Loading stock data...</div>
+  </section>
+
+  <section>
+    <h2>Education & News</h2>
+    <p>Coming soon: Articles, tutorials, and market insights!</p>
+  </section>
+
+  <script>
+    const coingeckoURL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,dogecoin&vs_currencies=usd&include_24hr_change=true';
+
+    // Replace with your actual Finnhub API key
+    const finnhubApiKey = 'YOUR_FINNHUB_API_KEY_HERE';
+    const finnhubStockURL = `https://finnhub.io/api/v1/quote?symbol=AAPL&token=${finnhubApiKey}`;
+
+    fetch(coingeckoURL)
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('crypto-list');
+        list.innerHTML = '';
+        Object.entries(data).forEach(([coin, info]) => {
+          const changeClass = info.usd_24h_change >= 0 ? 'positive' : 'negative';
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${coin.toUpperCase()}</strong>: $${info.usd.toFixed(2)} (<span class="${changeClass}">${info.usd_24h_change.toFixed(2)}%</span>)`;
+          list.appendChild(li);
+        });
+      })
+      .catch(() => {
+        document.getElementById('crypto-list').textContent = 'Failed to load crypto data.';
+      });
+
+    fetch(finnhubStockURL)
+      .then(res => res.json())
+      .then(data => {
+        const stockDiv = document.getElementById('stock-data');
+        if(data.c) {
+          stockDiv.innerHTML = `
+            <p>Current Price: $${data.c}</p>
+            <p>High Today: $${data.h}</p>
+            <p>Low Today: $${data.l}</p>
+            <p>Open Today: $${data.o}</p>
+            <p>Previous Close: $${data.pc}</p>
+          `;
+        } else {
+          stockDiv.textContent = 'Failed to load stock data.';
+        }
+      })
+      .catch(() => {
+        document.getElementById('stock-data').textContent = 'Failed to load stock data.';
+      });
+  </script>
+</body>
+</html>
